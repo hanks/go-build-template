@@ -37,3 +37,11 @@ Run `make push` to push the container image to `REGISTRY`.  Run `make all-push`
 to push the container images for all architectures.
 
 Run `make clean` to clean up.
+
+## Enhancement
+
+Makefile:
+   - change `BUILD_IMAGE` if you want to use other build image
+   - can leave `REGISTRY` empty if you do not have registory
+   - add `make enter` to enter container to make debug easy
+
