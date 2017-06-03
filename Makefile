@@ -15,11 +15,11 @@
 # The binary to build (just the basename).
 BIN := myapp
 
-# This repo's root import path (under GOPATH).
+# This repo's root import path (under GOPATH). If it is a private repository, you can set '.'
 PKG := github.com/thockin/go-build-template
 
-# Where to push the docker image.
-REGISTRY ?= thockin
+# Where to push the docker image. If no registry is set, leave it empty
+REGISTRY ?=
 
 # Which architecture to build - see $(ALL_ARCH) for options.
 ARCH ?= amd64
@@ -29,6 +29,9 @@ VERSION := $(shell git describe --tags --always --dirty)
 #
 # This version-strategy uses a manual value to set the version string
 #VERSION := 1.2.3
+
+# The build image to use
+BUILD_IMAGE ?= golang:1.8.3-alpine
 
 ###
 ### These variables should not need tweaking.
@@ -52,9 +55,12 @@ ifeq ($(ARCH),ppc64le)
     BASEIMAGE?=ppc64le/busybox
 endif
 
-IMAGE := $(REGISTRY)/$(BIN)-$(ARCH)
-
-BUILD_IMAGE ?= golang:1.7-alpine
+ifeq ($(strip $(REGISTRY)),)
+	# when no registry is set
+	IMAGE := $(BIN)-$(ARCH)
+else
+	IMAGE := $(REGISTRY)/$(BIN)-$(ARCH)
+endif
 
 # If you want to build all binaries, see the 'all-build' rule.
 # If you want to build all containers, see the 'all-container' rule.
@@ -141,6 +147,19 @@ test: build-dirs
 	        ./build/test.sh $(SRC_DIRS)                                    \
 	    "
 
+enter:
+	@docker run                                                            \
+	    -ti                                                                \
+	    --rm                                                               \
+	    -u $$(id -u):$$(id -g)                                             \
+	    -v $$(pwd)/.go:/go                                                 \
+	    -v $$(pwd):/go/src/$(PKG)                                          \
+	    -v $$(pwd)/bin/$(ARCH):/go/bin                                     \
+	    -v $$(pwd)/.go/std/$(ARCH):/usr/local/go/pkg/linux_$(ARCH)_static  \
+	    -w /go/src/$(PKG)                                                  \
+	    $(BUILD_IMAGE)                                                     \
+	    /bin/sh
+
 build-dirs:
 	@mkdir -p bin/$(ARCH)
 	@mkdir -p .go/src/$(PKG) .go/pkg .go/bin .go/std/$(ARCH)
@@ -152,3 +171,4 @@ container-clean:
 
 bin-clean:
 	rm -rf .go bin
+
