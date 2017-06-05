@@ -14,12 +14,21 @@ Makefile:
    - change `BIN` to your binary name
    - change `PKG` to the Go import path of this repo
    - change `REGISTRY` to the Docker registry you want to use
+   - change `BUILD_IMAGE` to the Go base image you want to use
    - maybe change `SRC_DIRS` if you use some other layout
    - choose a strategy for `VERSION` values - git tags or manual
 
 Dockerfile.in:
    - change the `MAINTAINER` to you
    - maybe change or remove the `USER` if you need
+
+## Enhancement by hanks
+
+Makefile:
+   - change `BUILD_IMAGE` if you want to use other build image
+   - can leave `REGISTRY` empty if you do not have registory
+   - add `make enter` to enter container to make debug easy
+   - add `--rm` to all docker command to remove temp container
 
 ## Building
 
@@ -38,10 +47,3 @@ to push the container images for all architectures.
 
 Run `make clean` to clean up.
 
-## Enhancement
-
-Makefile:
-   - change `BUILD_IMAGE` if you want to use other build image
-   - can leave `REGISTRY` empty if you do not have registory
-   - add `make enter` to enter container to make debug easy
-   - add `--rm` to all docker command to remove temp container
